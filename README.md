@@ -6,6 +6,6 @@ The installable [SKILL.md](SKILL.md) is a distribution copy of the [canonical pu
 
 An account and eligible paid subscription are required for entitled operations. The workflow requires approval for account, billing, credential, site, assignment, publication, reporting, and rejection actions. Never put an API token in a prompt or tracked file.
 
-The separate [local stdio MCP package](https://www.npmjs.com/package/@linkbunny/mcp) is published on npm as `@linkbunny/mcp`. Its [setup and authentication guide](https://getlinkbunny.com/docs/agents?utm_source=github_skill&utm_medium=repository#mcp) explains client registration and the five available tools. This repository does not contain the MCP server source or provide a hosted MCP endpoint.
+The separate [local stdio MCP package](https://www.npmjs.com/package/@linkbunny/mcp) is published on npm as `@linkbunny/mcp`. Its [setup and authentication guide](https://getlinkbunny.com/docs/agents?utm_source=github_skill&utm_medium=repository#mcp) explains client registration and the five available tools. [MCP package details](MCP.md) describe the published artifact. This repository does not contain the MCP server source or provide a hosted MCP endpoint.
 
 The skill is distributed under [MIT-0](LICENSE). The npm MCP package has its own MIT license.
