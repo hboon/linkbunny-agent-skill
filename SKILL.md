@@ -22,12 +22,41 @@ publishing through the site's normal workflow, or rejects the request.
    each creation, rotation, or revocation; an authorized browser-capable agent may perform it. Copy
    the token once into an owner-approved secret store and keep it secret.
 4. Use that token for the public API workflow below. The public API does not provide signup, login,
-   token-management, billing, subscription-status, or other account-management endpoints.
+   token-management, billing, or other account-management endpoints. It provides read-only status
+   endpoints for the token's own account (see "Status").
 
 Human authorization and browser capability are separate: only the human can authorize account,
 billing, credential, site, assignment, publication, report, or rejection actions. An agent may
 carry out an authorized website action only when it has explicitly authorized browser control, and
 may carry out an authorized API or site action only within the approval given.
+
+### Before the owner has an account
+
+When the owner asks you to set up LinkBunny and has no account or API token yet:
+
+1. Plan locally. Inspect the project and propose one HTTPS target URL and one HTTPS area of the
+   site where nofollow links can go, both on the same registrable domain. Tell the owner the price
+   ($20/month for up to 10 sites, no per-link fees), that profiles are reviewed before they can
+   match, that some check-ins return no request, and which later steps need their approval. Make
+   no LinkBunny API call while there is no token.
+2. With the owner's OK, open `https://getlinkbunny.com/login?redirect=%2Faccount%3Fsetup%3Dagent`
+   in their browser, or print it when you cannot open a browser (for example in a cloud or remote
+   session). Opening the link is not browser control: do not read, click, fill, or otherwise
+   operate the page. The owner signs in, subscribes, and creates the API token there.
+3. With the owner's OK, create a project file `.env.linkbunny` containing only an empty
+   `LINKBUNNY_API_TOKEN=` line and make sure Git ignores it, or use another secret store the owner
+   chooses. The owner pastes the token there. Never ask for the token in chat, and never print,
+   log, or commit the file's contents.
+4. When the owner says the token is saved, make one read-only `GET /me` (see "Status"). Keep the
+   token out of command arguments and output, for example:
+   `tr -d '\r' < .env.linkbunny | sed -nE 's/^(export )?LINKBUNNY_API_TOKEN="?([A-Za-z0-9._~-]+)"?$/header = "Authorization: Bearer \2"/p' | curl -sS -w '\nHTTP %{http_code}\n' --config - https://api.getlinkbunny.com/v1/me`.
+   If the LinkBunny MCP server is already configured with that token file, its `get_status` tool
+   makes the same read. `subscriptionActive: true` confirms setup. `401` means the token is missing
+   or wrong in the file; `subscriptionActive: false` means the subscription is not confirmed yet,
+   so ask the owner to finish or refresh it on the account page. Do not poll; wait until the owner
+   says it is done again.
+5. Only after `subscriptionActive: true`, continue with "A — Create a profile". Ask the owner
+   before registering the site.
 
 ## Activation and approval gates
 
@@ -38,6 +67,8 @@ subscribe, manage credentials, register sites, check in, place links, report, re
 Obtain action-time owner authorization before signup or login/account operations, token creation or
 rotation, subscription or billing changes, each site registration, assignment check-in/reservation,
 publication, report, or rejection. A prior setup approval is not blanket approval for later actions.
+Exception: the read-only status reads in "Status" change nothing, so they need no action-time
+authorization. A status result never authorizes any other action.
 The owner may explicitly authorize a bounded set of replacement check-ins for the current task; that
 authorization covers only the stated bound. General agent autonomy does not authorize a check-in.
 An assignment authorizes consideration only within the returned inventory boundary; it never
@@ -52,7 +83,8 @@ plain-language descriptions are enough.
 ## Safety contract
 
 - API base: `https://api.getlinkbunny.com/v1`.
-- Put the account token in `Authorization: Bearer <token>`.
+- Put the account token in `Authorization: Bearer <token>`. With curl, pass that header through
+  standard input (`--config -`), as in the examples, so the token never appears in command arguments.
 - Keep tokens in an owner-approved secret store. Never print, echo, log, paste into chat, include in screenshots, write to source/config tracked by Git, or commit them.
 - Register only sites the owner is authorized to manage.
 - Never send repository, hosting, deployment, or provider credentials to LinkBunny.
@@ -63,6 +95,18 @@ plain-language descriptions are enough.
 - V1 is self-reported. Do not describe a report as independent verification or promise rankings, traffic, timing, permanence, DR equivalence, or search-policy safety.
 
 ## Operations
+
+### Status (read-only)
+
+`GET /me` returns `subscriptionActive`, `siteLimit` (active sites allowed), `profileCount`, and
+`activeProfileCount` for the token's own account. `GET /profiles` returns that account's sites, newest
+first, each with `profileID`, `domain`, `status` (`pending`, `pending_review`, `active`, `paused`,
+`rejected`, or `retired`), and `pendingAssignment` (the existing unexpired pending assignment's
+`assignmentID`, `targetURL`, `requestedAnchor`, and `expiresAt`, or `null`). It accepts optional
+`limit` (1–100, default 50) and `offset`; a non-null `nextOffset` means more sites exist. Both work
+with a valid token even when the subscription has lapsed, and neither reserves, expires, or changes
+anything. Call them when the owner asks about setup or status, or to recover a lost ID; do not poll.
+Present an existing pending assignment for owner review rather than checking in again.
 
 ### A — Create a profile
 
@@ -75,8 +119,8 @@ suggest asking the agent to check again after the advisory interval or once appr
 Immediately record and retain the response's canonical `profileID` in the owner's approved private
 configuration (for example, `LINKBUNNY_PROFILE_ID` in an untracked env file). Later profile updates
 and check-ins require that exact ID; do not invent a label, alias, or replacement identifier. If it
-was not retained, the signed-in owner can recover it from the private Account page. There is no
-public profile-list endpoint.
+was not retained, recover it with the read-only `GET /profiles` status read, or the signed-in owner
+can find it on the private Account page.
 Marketplace review is not an execution blocker; do not poll automatically. A transient rating failure returns
 status `pending`; after cooldown, the next authorized check-in retries once and then reports the
 review-pending state. Approval is profile-level: approved profiles use immediate assignment without
@@ -141,7 +185,8 @@ calendar day. Pending, rejected, and expired/unreported assignments do not consu
 capacity; eligibility resets at the next UTC midnight.
 
 ```sh
-curl -X POST -H "Authorization: Bearer $LINKBUNNY_API_TOKEN" \
+printf 'header = "Authorization: Bearer %s"\n' "$LINKBUNNY_API_TOKEN" |
+  curl -X POST --config - \
   "https://api.getlinkbunny.com/v1/profiles/$LINKBUNNY_PROFILE_ID/check-in"
 ```
 
@@ -197,8 +242,8 @@ resource, or 409 terminal conflict.
 
 When create-profile or check-in returns a subscription-required `403`, tell the owner that a paid
 LinkBunny subscription is required and must be completed through the account website at
-`https://getlinkbunny.com/account`. Do not imply that signup, billing, token creation, or account
-status is available through the public API. Report and reject remain available for already-issued
+`https://getlinkbunny.com/account`. Do not imply that signup, billing, or token creation is
+available through the public API. Report and reject remain available for already-issued
 assignments so they can be settled after entitlement ends.
 
 Pending assignments expire at their seven-day deadline. Expiration releases the reservation but
