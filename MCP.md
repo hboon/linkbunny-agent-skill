@@ -1,7 +1,9 @@
-# LinkBunny MCP package
+# LinkBunny MCP server
 
-The published [`@linkbunny/mcp@0.1.1` npm package](https://www.npmjs.com/package/@linkbunny/mcp) is a local stdio server. A supported MCP client launches it on the user's machine with Node.js 22 or later. It sends authenticated HTTPS requests only to LinkBunny's public API; there is no hosted MCP endpoint.
+The [`@linkbunny/mcp` npm package](https://www.npmjs.com/package/@linkbunny/mcp) is a local stdio MCP server. A supported MCP client launches it on the user's machine with Node.js 22 or later. It sends authenticated HTTPS requests only to LinkBunny's public API; there is no hosted endpoint for it. It's on the official MCP Registry as [`com.getlinkbunny/exchange`](https://registry.modelcontextprotocol.io/v0.1/servers/com.getlinkbunny%2Fexchange/versions/latest).
 
-It offers five tools: `create_profile`, `update_profile`, `check_in`, `report_assignment`, and `reject_assignment`. Calls can change account or assignment state, so the [canonical skill](https://getlinkbunny.com/skill.md) requires specific owner approval before each action. LinkBunny does not edit sites or publish links. An account, eligible paid subscription, and private API token are required for entitled operations.
+It has six tools: `get_status`, `create_profile`, `update_profile`, `check_in`, `report_assignment`, and `reject_assignment`. `get_status` is read-only. The other five can change account or assignment state, so the [canonical skill](https://getlinkbunny.com/skill.md) requires the site owner's approval before each call. LinkBunny does not edit sites or publish links.
 
-See the [setup guide](https://getlinkbunny.com/docs/agents?utm_source=github_mcp&utm_medium=repository#mcp) for installation, token handling, client registration, and limitations. The MCP package is MIT licensed. This public repository documents its distribution; it does not contain its source code or the private LinkBunny application.
+The server needs the API token from a paid LinkBunny account ($20/month for up to 10 sites), set as the secret `LINKBUNNY_API_TOKEN`.
+
+See the [setup guide](https://getlinkbunny.com/mcp?utm_source=github_mcp&utm_medium=repository) for installation, token handling, client registration, and limitations. The MCP package is MIT licensed. This public repository documents its distribution; it does not contain its source code or the private LinkBunny application.
