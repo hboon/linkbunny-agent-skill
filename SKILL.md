@@ -15,10 +15,15 @@ publishing through the site's normal workflow, or rejects the request.
 
 1. A LinkBunny account is required. The human may create an account or log in at
    `https://getlinkbunny.com`; an agent may do so only with explicitly authorized browser control.
-2. An eligible paid subscription is required before entitled operations. The human must authorize
-   starting, changing, or cancelling billing; an authorized browser-capable agent may operate the
-   website UI for that approved action.
-3. With an active subscription, create an API token in the account UI. The human must authorize
+2. A new account can try one exchange free: one site, one completed link placement and one received
+   backlink, no card. Each direction stops on its own: after the site's first placement is
+   successfully reported, it gets no new assignments to place, and after its first backlink is
+   reported, it is no longer picked as the target of new assignments. The other direction stays
+   open. Assignments already issued can still be reported within their normal window and settle,
+   so a free site can end up with more than one placement or backlink. The paid subscription removes that limit and covers up to 10 sites. The human
+   must authorize starting, changing, or cancelling billing; an authorized browser-capable agent may
+   operate the website UI for that approved action.
+3. Create an API token in the account UI. The human must authorize
    each creation, rotation, or revocation; an authorized browser-capable agent may perform it. Copy
    the token once into an owner-approved secret store and keep it secret.
 4. Use that token for the public API workflow below. The public API does not provide signup, login,
@@ -35,14 +40,15 @@ may carry out an authorized API or site action only within the approval given.
 When the owner asks you to set up LinkBunny and has no account or API token yet:
 
 1. Plan locally. Inspect the project and propose one HTTPS target URL and one HTTPS area of the
-   site where nofollow links can go, both on the same registrable domain. Tell the owner the price
-   ($20/month for up to 10 sites, no per-link fees), that profiles are reviewed before they can
-   match, that some check-ins return no request, and which later steps need their approval. Make
-   no LinkBunny API call while there is no token.
+   site where nofollow links can go, both on the same registrable domain. Tell the owner the first
+   exchange is free for one site, the price after that ($20/month for up to 10 sites, no per-link
+   fees), that profiles are reviewed before they can match, that some check-ins return no request,
+   and which later steps need their approval. Make no LinkBunny API call while there is no token.
 2. With the owner's OK, open `https://getlinkbunny.com/login?redirect=%2Faccount%3Fsetup%3Dagent`
    in their browser, or print it when you cannot open a browser (for example in a cloud or remote
    session). Opening the link is not browser control: do not read, click, fill, or otherwise
-   operate the page. The owner signs in, subscribes, and creates the API token there.
+   operate the page. The owner signs in and creates the API token there. Subscribing is optional
+   for the free exchange.
 3. With the owner's OK, create a project file `.env.linkbunny` containing only an empty
    `LINKBUNNY_API_TOKEN=` line and make sure Git ignores it, or use another secret store the owner
    chooses. The owner pastes the token there. Never ask for the token in chat, and never print,
@@ -51,12 +57,12 @@ When the owner asks you to set up LinkBunny and has no account or API token yet:
    token out of command arguments and output, for example:
    `tr -d '\r' < .env.linkbunny | sed -nE 's/^(export )?LINKBUNNY_API_TOKEN="?([A-Za-z0-9._~-]+)"?$/header = "Authorization: Bearer \2"/p' | curl -sS -w '\nHTTP %{http_code}\n' --config - https://api.getlinkbunny.com/v1/me`.
    If the LinkBunny MCP server is already configured with that token file, its `get_status` tool
-   makes the same read. `subscriptionActive: true` confirms setup. `401` means the token is missing
-   or wrong in the file; `subscriptionActive: false` means the subscription is not confirmed yet,
-   so ask the owner to finish or refresh it on the account page. Do not poll; wait until the owner
-   says it is done again.
-5. Only after `subscriptionActive: true`, continue with "A — Create a profile". Ask the owner
-   before registering the site.
+   makes the same read. A `200` response confirms setup. `subscriptionActive: false` with
+   `siteLimit: 1` means the account is on the free exchange; `subscriptionActive: true` means the
+   paid plan is active. `401` means the token is missing or wrong in the file. Do not poll; wait
+   until the owner says it is done again.
+5. After a `200` status read, continue with "A — Create a profile". Ask the owner before
+   registering the site.
 
 ## Activation and approval gates
 
@@ -108,12 +114,22 @@ with a valid token even when the subscription has lapsed, and neither reserves, 
 anything. Call them when the owner asks about setup or status, or to recover a lost ID; do not poll.
 Present an existing pending assignment for owner review rather than checking in again.
 
+`GET /assignments/:assignmentID` returns one assignment issued to one of your sites, including a
+rejected or expired one: `assignmentID`, source `profileID`, `sourceDomain`, `inventoryPrefix`,
+`targetURL`, `requestedAnchor`, `status` (`pending`, `expired`, `rejected`, `reported`, or
+`reported_late`), `rejectionReason`, `rejectedAt`, the unchanged original `expiresAt`,
+`reportableUntil`, and `canReport`. `reportableUntil` is the last moment a report is accepted:
+`expiresAt` for a rejected assignment, 30 days after `expiresAt` for a pending or expired one, and
+`null` once reported. A pending assignment reads as `expired` from its `expiresAt`. Any assignment
+not issued to your sites returns `404`. Like the other status reads, it needs no subscription,
+changes nothing, and should not be polled; use it to confirm an assignment before asking to report.
+
 ### A — Create a profile
 
 After specific authorization, `POST /profiles` with `targetURL`, `requestedAnchor`, one documented
 `category`, and `inventoryPrefix`. Both URLs must be public HTTPS URLs without credentials or
-fragments, on the same registrable domain. This operation requires an active subscription. A
-successful Domain Rating lookup returns `201` with status `pending_review`. LinkBunny reviews each
+fragments, on the same registrable domain. Without a subscription, an account can register one
+site for its free exchange. A successful Domain Rating lookup returns `201` with status `pending_review`. LinkBunny reviews each
 new profile once before it can match as a source or target. Tell the owner review is pending and
 suggest asking the agent to check again after the advisory interval or once approval is confirmed.
 Immediately record and retain the response's canonical `profileID` in the owner's approved private
@@ -144,11 +160,13 @@ only when no more specific category fits:
 After specific authorization, `PATCH /profiles/:profileID` accepts the same fields. Changing the
 target or inventory URL materially resets the profile to Domain Rating lookup and one-time review;
 it cannot match during re-review. Anchor- or category-only edits preserve an existing approval.
+Without a subscription, a URL change made within an hour of the site's creation or previous URL
+change waits up to an hour for its Domain Rating lookup and stays `pending` until then.
 
 ### B — Check in
 
-After specific authorization, `POST /profiles/:profileID/check-in`. This operation requires an
-active subscription. The response contains the same existing pending assignment, one newly
+After specific authorization, `POST /profiles/:profileID/check-in`. Without a subscription, the
+free exchange allows check-ins until the site's one placement is reported. The response contains the same existing pending assignment, one newly
 reserved assignment, or `{ "assignment": null }`. A profile awaiting review instead returns
 `{ "assignment": null, "status": "profile_pending_review", "message": "This site is awaiting marketplace review.", "retryAfterSeconds": 3600 }`;
 the one-hour interval is advisory, and every check-in still requires specific owner authorization.
@@ -240,11 +258,13 @@ may return `409 terminal_conflict`. Expected errors use `{ "error": { "code", "m
 400 invalid request, 401 credential failure, 403 entitlement failure, 404 unavailable owned
 resource, or 409 terminal conflict.
 
-When create-profile or check-in returns a subscription-required `403`, tell the owner that a paid
-LinkBunny subscription is required and must be completed through the account website at
-`https://getlinkbunny.com/account`. Do not imply that signup, billing, or token creation is
-available through the public API. Report and reject remain available for already-issued
-assignments so they can be settled after entitlement ends.
+When create-profile, check-in, or profile update returns a `403` that mentions the free exchange or a
+subscription, relay its message: the free exchange covers one site and one reported placement, and
+the paid subscription at `https://getlinkbunny.com/account` adds more. A free site that already
+placed its link still stays eligible to receive its one backlink when a match comes up. Do not
+imply that signup, billing, or token creation is available through the public API. Report and
+reject never depend on a subscription: any issued assignment can be reported or reconsidered
+within the usual windows, including after entitlement ends or the free exchange is used.
 
 Pending assignments expire at their seven-day deadline. Expiration releases the reservation but
 does not permanently exclude the directional pair. Report completion for the exact original
