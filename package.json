@@ -27,6 +27,8 @@
     "test:kilo": "bun test test/kilo/package.test.ts",
     "prepare:tessl": "bun scripts/prepare-tessl.ts",
     "test:tessl": "bun test test/tessl/package.test.ts",
+    "prepare:factory": "bun scripts/prepare-factory.ts",
+    "test:factory": "bun test test/factory/package.test.ts",
     "test": "bun test test/package.test.ts"
   }
 }
