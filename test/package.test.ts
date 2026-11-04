@@ -19,3 +19,28 @@ test("packed bundle preserves the API Skill with DSH safety and no executable pa
   expect(files).toEqual(expect.arrayContaining(["package.json", "LICENSE", "DSH.md", "cordis.patch.yml", "skills/linkbunny/SKILL.md"]))
   expect(files.some((file: string) => file.includes(".env") || file.startsWith("test/") || file.startsWith("scripts/"))).toBe(false)
 })
+
+test("Pi tarball contains only the canonical Skill, public docs, license, and Skill-only manifest", async () => {
+  const output = await mkdtemp(join(process.env.LINKBUNNY_TEST_ARTIFACTS ?? tmpdir(), "linkbunny-pi-package-"))
+  const packed = Bun.spawnSync(["bun", "scripts/pack-pi.ts", output], { stdout: "pipe", stderr: "pipe" })
+  expect(packed.exitCode).toBe(0)
+  const { artifact, files } = JSON.parse(packed.stdout.toString())
+  expect(files.sort()).toEqual(["LICENSE", "README.md", "package.json", "skills/linkbunny/SKILL.md"])
+  const extract = (filename: string) => {
+    const result = Bun.spawnSync(["tar", "-xOzf", artifact, `package/${filename}`], { stdout: "pipe", stderr: "pipe" })
+    if (result.exitCode !== 0) throw new Error(result.stderr.toString())
+    return result.stdout.toString()
+  }
+  expect(extract("skills/linkbunny/SKILL.md")).toBe(await readFile("SKILL.md", "utf8"))
+  expect(extract("README.md")).toBe(await readFile("PI.md", "utf8"))
+  expect(extract("LICENSE")).toBe(await readFile("LICENSE", "utf8"))
+  const manifest = JSON.parse(extract("package.json"))
+  expect(manifest.name).toBe("@linkbunny/pi-skill")
+  expect(manifest.version).toBe("0.1.0")
+  expect(manifest.pi).toEqual({ skills: ["./skills"] })
+  expect(manifest.keywords).toContain("pi-package")
+  expect(manifest.publishConfig).toEqual({ access: "public" })
+  for (const field of ["scripts", "bin", "main", "dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]) {
+    expect(manifest[field]).toBeUndefined()
+  }
+})

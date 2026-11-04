@@ -22,6 +22,7 @@
   },
   "scripts": {
     "pack:dsh": "bun scripts/pack-dsh.ts",
+    "pack:pi": "bun scripts/pack-pi.ts",
     "test": "bun test test/package.test.ts"
   }
 }

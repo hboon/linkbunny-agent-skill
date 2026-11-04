@@ -1,0 +1,16 @@
+{
+  "name": "@linkbunny/pi-skill",
+  "version": "0.1.0",
+  "description": "The LinkBunny Skill for contextual, owner-approved nofollow exchanges in Pi",
+  "license": "MIT-0",
+  "keywords": ["pi-package", "agent-skill", "linkbunny"],
+  "homepage": "https://getlinkbunny.com/docs/agents?ref=pi-packages",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hboon/linkbunny-agent-skill.git"
+  },
+  "bugs": "https://github.com/hboon/linkbunny-agent-skill/issues",
+  "files": ["skills", "LICENSE", "README.md"],
+  "publishConfig": { "access": "public" },
+  "pi": { "skills": ["./skills"] }
+}
