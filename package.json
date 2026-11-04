@@ -1,0 +1,27 @@
+{
+  "name": "linkbunny-dsh",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The LinkBunny API skill for owner-approved nofollow exchanges in DeepSeek Harness",
+  "license": "MIT-0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hboon/linkbunny-agent-skill.git"
+  },
+  "homepage": "https://getlinkbunny.com/docs/agents",
+  "bugs": "https://github.com/hboon/linkbunny-agent-skill/issues",
+  "type": "module",
+  "engines": {
+    "dsh": "0.2.1-rc.5"
+  },
+  "files": ["cordis.patch.yml", "skills", "DSH.md", "dsh-safety.md", "MCP.md", "SKILL.md", "README.md", "LICENSE"],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "scripts": {
+    "pack:dsh": "bun scripts/pack-dsh.ts",
+    "test": "bun test test/package.test.ts"
+  }
+}

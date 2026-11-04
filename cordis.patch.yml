@@ -1,0 +1,8 @@
+- insert:
+    - id: linkbunny-skills
+      name: '@deepseek-ai/dsh-skill-filesystem'
+      config:
+        providerName: linkbunny
+        includeDefaultRoots: false
+        watch: false
+        bundledSkillDir: !!js process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('linkbunny-dsh/package.json')), 'skills')
