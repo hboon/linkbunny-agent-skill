@@ -12,7 +12,7 @@ From this repository, with Bun and npm available:
 bun run pack:dsh -- /absolute/path/to/output
 ```
 
-The output directory contains `linkbunny-dsh-0.1.0.tgz` and its inspectable package source. Packing copies the root `SKILL.md` into DSH's `skills/linkbunny/SKILL.md` layout and appends [DSH safety instructions](dsh-safety.md). Existing Skill consumers keep using the unchanged root file. Install the tarball rather than the unstaged repository directory.
+The output directory contains `linkbunny-dsh-0.1.0.tgz` and its inspectable package source. Packing copies the root `SKILL.md` into DSH's `skills/linkbunny/SKILL.md` layout and appends [DSH safety instructions](dsh-safety.md). The repository commits the same generated file, so a source install from the repository root loads the same Skill. Existing Skill consumers keep using the unchanged root file. After changing either source file, run `bun run sync:dsh`; `bun run test` fails while the copies differ.
 
 With the selected DSH client and pnpm installed, run:
 
@@ -21,7 +21,13 @@ dsh plugin --profile headless add /absolute/path/to/output/linkbunny-dsh-0.1.0.t
 dsh --profile headless --dump-config
 ```
 
-The composed configuration should include the `linkbunny-dsh` layer and `linkbunny-skills` provider. To remove it:
+To install from source instead, run:
+
+```sh
+dsh plugin --profile headless add github:hboon/linkbunny-agent-skill
+```
+
+The repository has no install or build scripts. The composed configuration should include the `linkbunny-dsh` layer and `linkbunny-skills` provider. To remove it:
 
 ```sh
 dsh plugin --profile headless remove linkbunny-dsh
@@ -43,7 +49,7 @@ The token authenticates `https://api.getlinkbunny.com/v1`. It is not a substitut
 
 Package and local client checks use fake account and assignment data. They do not establish live exchange availability, paid-model behavior, or a model's compliance with every approval instruction. The Skill states the authorization policy; this bundle adds no programmatic approval enforcement.
 
-Local acceptance passed on Node.js 24.22.1 for Linux with pnpm 9.2.0: tarball installation, composed configuration, Skill loading, read-only status, empty-account, review-pending, no-match, exchange dispatch, approval denial, and rejection. A deterministic model and fake MCP transport supplied the responses. The approval gate and grants belonged to the test fixture; the bundle configures no MCP server. No live API authentication, hosted OAuth, external model, publication, or report was tested.
+Local acceptance passed on Node.js 24.22.1 for Linux with pnpm 9.2.0: tarball installation, composed configuration, Skill loading, read-only status, empty-account, review-pending, no-match, exchange dispatch, approval denial, and rejection. A deterministic model and fake MCP transport supplied the responses. The approval gate and grants belonged to the test fixture; the bundle configures no MCP server. No live API authentication, hosted OAuth, external model, publication, or report was tested. A repository-root source install passed the same cases using an offline archive of the repository with pnpm 9.2.0 and 10.33.0; fetching from GitHub was not tested.
 
 Run `bun run test` for package checks. The [local client fixture in the source repository](https://github.com/hboon/linkbunny-agent-skill/tree/main/test/dsh) describes isolated acceptance with the pinned client; it must never use real credentials or external model calls.
 

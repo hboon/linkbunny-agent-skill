@@ -20,6 +20,19 @@ test("packed bundle preserves the API Skill with DSH safety and no executable pa
   expect(files.some((file: string) => file.includes(".env") || file.startsWith("test/") || file.startsWith("scripts/"))).toBe(false)
 })
 
+test("repository-root DSH Skill matches the packed Skill for source installs", async () => {
+  const committed = await readFile("skills/linkbunny/SKILL.md", "utf8")
+  expect(committed).toBe(`${await readFile("SKILL.md", "utf8")}\n${await readFile("dsh-safety.md", "utf8")}`)
+  const listed = Bun.spawnSync(["npm", "pack", "--dry-run", "--ignore-scripts", "--json"], { stdout: "pipe", stderr: "pipe" })
+  expect(listed.exitCode).toBe(0)
+  const [{ files }] = JSON.parse(listed.stdout.toString())
+  expect(files.map((file: { path: string }) => file.path)).toEqual(expect.arrayContaining(["package.json", "cordis.patch.yml", "skills/linkbunny/SKILL.md"]))
+  const manifest = JSON.parse(await readFile("package.json", "utf8"))
+  for (const script of ["preinstall", "install", "postinstall", "prepare", "prepack", "prepublish", "prepublishOnly", "publish"]) {
+    expect(manifest.scripts[script]).toBeUndefined()
+  }
+})
+
 test("Pi tarball contains only the canonical Skill, public docs, license, and Skill-only manifest", async () => {
   const output = await mkdtemp(join(process.env.LINKBUNNY_TEST_ARTIFACTS ?? tmpdir(), "linkbunny-pi-package-"))
   const packed = Bun.spawnSync(["bun", "scripts/pack-pi.ts", output], { stdout: "pipe", stderr: "pipe" })

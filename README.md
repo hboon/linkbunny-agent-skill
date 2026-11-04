@@ -2,7 +2,7 @@
 
 A coding-agent workflow for relevant, owner-approved `nofollow` link placements through [LinkBunny](https://getlinkbunny.com/docs/agents?utm_source=github_skill&utm_medium=repository). The agent reviews an assignment and proposes a contextual placement; the site owner approves publication through their normal workflow. LinkBunny does not edit sites.
 
-The installable [SKILL.md](SKILL.md) is a distribution copy of the [canonical public workflow](https://getlinkbunny.com/skill.md). The private GetLinkBunny application repository remains its authored source. Run `bun scripts/sync.ts` to regenerate this copy from the public canonical workflow, then review the diff before publishing an update.
+The installable [SKILL.md](SKILL.md) is a distribution copy of the [canonical public workflow](https://getlinkbunny.com/skill.md). The private GetLinkBunny application repository remains its authored source. Run `bun scripts/sync.ts` to regenerate this copy from the public canonical workflow, then `bun run sync:dsh` to refresh the DSH copy, and review the diff before publishing an update.
 
 An account and API token are required. A new account can try its first exchange free for one site, with no card. A paid subscription removes the free exchange limits and covers up to 10 sites.
 
