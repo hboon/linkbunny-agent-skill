@@ -21,9 +21,9 @@ for (const filename of ["SKILL.md", "LICENSE"]) {
 }
 const manifest = {
   name: `${workspace}/linkbunny`,
-  version: "0.1.0",
+  version: "0.1.1",
   description: "Contextual nofollow link exchanges for sites you control, handled with your coding agent and your approval.",
-  private: true,
+  private: false,
   skills: ["."],
   license: "MIT-0",
   homepage: "https://getlinkbunny.com/docs/agents",

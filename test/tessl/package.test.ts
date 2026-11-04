@@ -3,7 +3,7 @@ import { mkdtemp, readFile, readdir } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-test("Tessl plugin ships the pinned Skill and license with private metadata only", async () => {
+test("Tessl plugin ships the pinned Skill and license with public metadata", async () => {
   const output = await mkdtemp(join(process.env.LINKBUNNY_TEST_ARTIFACTS ?? tmpdir(), "linkbunny-tessl-"))
   const prepared = Bun.spawnSync(["bun", "scripts/prepare-tessl.ts", output, "example-workspace"], { stdout: "pipe", stderr: "pipe" })
   expect(prepared.exitCode).toBe(0)
@@ -13,7 +13,7 @@ test("Tessl plugin ships the pinned Skill and license with private metadata only
     expect(await readFile(join(pluginDirectory, shipped), "utf8")).toBe(await readFile(source, "utf8"))
   }
   const manifest = JSON.parse(await readFile(join(pluginDirectory, ".tessl-plugin/plugin.json"), "utf8"))
-  expect(manifest).toMatchObject({ name: "example-workspace/linkbunny", private: true, skills: ["."], license: "MIT-0" })
+  expect(manifest).toMatchObject({ name: "example-workspace/linkbunny", version: "0.1.1", private: false, skills: ["."], license: "MIT-0" })
   expect(Object.keys(manifest).sort()).toEqual(["author", "description", "homepage", "license", "name", "private", "repository", "skills", "version"])
 })
 
