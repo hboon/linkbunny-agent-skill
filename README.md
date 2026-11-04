@@ -17,3 +17,5 @@ A [DeepSeek Harness bundle](DSH.md) packages this same Skill for the pinned DSH 
 A [Pi package](https://github.com/hboon/linkbunny-agent-skill/blob/main/PI.md) copies the same Skill into Pi's package layout. Build it with `bun run pack:pi -- /absolute/path/to/output`, then load the extracted local package. The guide covers pre-account planning, private token setup, owner approval, and verification limits. Public npm publication is a separate step.
 
 A [Kilo import](https://github.com/hboon/linkbunny-agent-skill/blob/main/KILO.md) uses the existing root Skill without a second source package. Prepare its local marketplace contribution with `bun run prepare:kilo -- /absolute/path/to/output`. The guide covers source pinning, local loading, owner approval, and offline verification limits. Marketplace submission is a separate step.
+
+A [Tessl plugin](https://github.com/hboon/linkbunny-agent-skill/blob/main/TESSL.md) packages the same Skill for the Tessl Registry. Prepare it with `bun run prepare:tessl -- /absolute/path/to/output <tessl-workspace>`. The guide covers source pinning, local validation limits, and the separate publishing and public-visibility steps.

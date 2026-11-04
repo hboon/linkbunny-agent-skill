@@ -25,6 +25,8 @@
     "pack:pi": "bun scripts/pack-pi.ts",
     "prepare:kilo": "bun scripts/prepare-kilo.ts",
     "test:kilo": "bun test test/kilo/package.test.ts",
+    "prepare:tessl": "bun scripts/prepare-tessl.ts",
+    "test:tessl": "bun test test/tessl/package.test.ts",
     "test": "bun test test/package.test.ts"
   }
 }
