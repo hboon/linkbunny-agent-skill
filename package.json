@@ -23,6 +23,8 @@
   "scripts": {
     "pack:dsh": "bun scripts/pack-dsh.ts",
     "pack:pi": "bun scripts/pack-pi.ts",
+    "prepare:kilo": "bun scripts/prepare-kilo.ts",
+    "test:kilo": "bun test test/kilo/package.test.ts",
     "test": "bun test test/package.test.ts"
   }
 }
