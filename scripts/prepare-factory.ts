@@ -17,11 +17,6 @@ async function exists(path: string) {
   return stat(path).then(() => true, () => false)
 }
 
-for (const filename of ["SKILL.md", "LICENSE"]) {
-  if (sourceGit("show", `${sourceCommit}:${filename}`) !== await readFile(join(repository, filename), "utf8")) {
-    throw new Error(`${filename} differs from the pinned public source; review and update the source pin before packaging`)
-  }
-}
 const description = "Contextual nofollow link exchanges for sites you control, handled with your coding agent and your approval."
 const manifest = {
   name: "linkbunny",
@@ -51,8 +46,8 @@ await mkdir(join(pluginDirectory, "skills/linkbunny"), { recursive: true })
 await mkdir(join(marketplaceDirectory, "skills"), { recursive: true })
 await mkdir(join(marketplaceDirectory, ".factory-plugin"), { recursive: true })
 await writeFile(join(pluginDirectory, ".factory-plugin/plugin.json"), `${JSON.stringify(manifest, null, 2)}\n`)
-await copyFile(join(repository, "SKILL.md"), join(pluginDirectory, "skills/linkbunny/SKILL.md"))
-await copyFile(join(repository, "LICENSE"), join(pluginDirectory, "LICENSE"))
+await writeFile(join(pluginDirectory, "skills/linkbunny/SKILL.md"), sourceGit("show", `${sourceCommit}:SKILL.md`))
+await writeFile(join(pluginDirectory, "LICENSE"), sourceGit("show", `${sourceCommit}:LICENSE`))
 await copyFile(join(repository, "factory/README.md"), join(pluginDirectory, "README.md"))
 await symlink("../plugins/linkbunny/skills/linkbunny", skillLink)
 await writeFile(marketplacePath, `${JSON.stringify(marketplace, null, 2)}\n`)

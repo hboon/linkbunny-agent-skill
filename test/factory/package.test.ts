@@ -4,6 +4,8 @@ import { tmpdir } from "node:os"
 import { basename, join } from "node:path"
 
 const artifacts = process.env.LINKBUNNY_TEST_ARTIFACTS ?? tmpdir()
+const sourceCommit = "4d50cfeaa1ab4b40e1ccf304fd1dca6fb3c1b0f6"
+const pinned = (filename: string) => Bun.spawnSync(["git", "show", `${sourceCommit}:${filename}`], { stdout: "pipe" }).stdout.toString()
 
 function prepare(directory: string) {
   return Bun.spawnSync(["bun", "scripts/prepare-factory.ts", directory], { stdout: "pipe", stderr: "pipe" })
@@ -13,12 +15,12 @@ test("Factory plugin ships the pinned Skill and license in a local marketplace",
   const marketplaceDirectory = await mkdtemp(join(artifacts, "linkbunny-factory-"))
   const prepared = prepare(marketplaceDirectory)
   expect(prepared.exitCode).toBe(0)
-  expect(JSON.parse(prepared.stdout.toString())).toMatchObject({ marketplace: "linkbunny-local", plugin: `linkbunny@${basename(marketplaceDirectory)}`, version: "0.1.0" })
+  expect(JSON.parse(prepared.stdout.toString())).toMatchObject({ marketplace: "linkbunny-local", plugin: `linkbunny@${basename(marketplaceDirectory)}`, version: "0.1.0", sourceCommit })
   const pluginDirectory = join(marketplaceDirectory, "plugins/linkbunny")
   expect((await readdir(pluginDirectory, { recursive: true })).sort()).toEqual([".factory-plugin", ".factory-plugin/plugin.json", "LICENSE", "README.md", "skills", "skills/linkbunny", "skills/linkbunny/SKILL.md"])
-  for (const [shipped, source] of [["skills/linkbunny/SKILL.md", "SKILL.md"], ["LICENSE", "LICENSE"], ["README.md", "factory/README.md"]]) {
-    expect(await readFile(join(pluginDirectory, shipped), "utf8")).toBe(await readFile(source, "utf8"))
-  }
+  expect(await readFile(join(pluginDirectory, "skills/linkbunny/SKILL.md"), "utf8")).toBe(pinned("SKILL.md"))
+  expect(await readFile(join(pluginDirectory, "LICENSE"), "utf8")).toBe(pinned("LICENSE"))
+  expect(await readFile(join(pluginDirectory, "README.md"), "utf8")).toBe(await readFile("factory/README.md", "utf8"))
   const manifest = JSON.parse(await readFile(join(pluginDirectory, ".factory-plugin/plugin.json"), "utf8"))
   expect(manifest).toMatchObject({ name: "linkbunny", version: "0.1.0", license: "MIT-0" })
   expect(Object.keys(manifest).sort()).toEqual(["author", "description", "homepage", "license", "name", "repository", "version"])

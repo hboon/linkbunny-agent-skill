@@ -22,7 +22,7 @@ If the directory is a checkout of `Factory-AI/factory-plugins`, the generator ad
 - A `skills/linkbunny` symlink to the plugin Skill, which the catalog's `check-skills` workflow requires.
 - One `linkbunny` entry appended to `.factory-plugin/marketplace.json`, in the `marketing` category.
 
-The generator refuses a marketplace that already has a LinkBunny plugin. The Skill and license must match the reviewed public source at commit `4d50cfeaa1ab4b40e1ccf304fd1dca6fb3c1b0f6`, the same pin as the [Kilo](KILO.md) and [Tessl](TESSL.md) packages. Droid reads only the marketplace entry, so `plugin.json` carries descriptive metadata. Updating the workflow requires reviewing a new public revision and updating the pin.
+The generator refuses a marketplace that already has a LinkBunny plugin. It copies the Skill and license from the reviewed public source at commit `4d50cfeaa1ab4b40e1ccf304fd1dca6fb3c1b0f6`, the same pin as the [Kilo](KILO.md) and [Tessl](TESSL.md) packages, so later root changes do not alter the plugin. Droid reads only the marketplace entry, so `plugin.json` carries descriptive metadata. Updating the workflow requires reviewing a new public revision and updating the pin.
 
 ## Local validation
 

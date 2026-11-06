@@ -29,7 +29,7 @@ The generator creates `kilo-marketplace-source-*/skills/linkbunny/` with three f
 - `LICENSE`, copied unchanged under MIT-0.
 - `local.remove`, listing unrelated root entries that Kilo's updater must exclude. Kilo excludes this control file from the installed archive.
 
-The source is the already-public repository root at commit `4d50cfeaa1ab4b40e1ccf304fd1dca6fb3c1b0f6`. Both `metadata.source.ref` and `commit` contain that revision. Kilo fetches `ref`; `commit` records what it imported. The generator refuses a local Skill or license that differs from the pin. Updating the workflow requires reviewing a new public revision and updating the pin.
+The source is the already-public repository root at commit `4d50cfeaa1ab4b40e1ccf304fd1dca6fb3c1b0f6`. Both `metadata.source.ref` and `commit` contain that revision. Kilo fetches `ref`; `commit` records what it imported. The generator reads the Skill and license from that commit, so later root changes do not alter the import. Updating the workflow requires reviewing a new public revision and updating the pin.
 
 Kilo Marketplace's updater supports `metadata.source.path: "."`. Its stock URL importer infers the root directory's name as `.` and cannot create the intended catalog entry. Prepare the named `skills/linkbunny/` entry manually, then run the marketplace updater and validators. No nested source package is needed. These semantics were checked against [marketplace revision 6c1b454](https://github.com/Kilo-Org/kilo-marketplace/tree/6c1b4543cac1d45a80bf5904e4b69ac315117323).
 

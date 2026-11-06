@@ -1,4 +1,4 @@
-import { copyFile, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises"
+import { copyFile, mkdir, mkdtemp, writeFile } from "node:fs/promises"
 import { join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -14,11 +14,6 @@ function sourceGit(...args: string[]) {
   return result.stdout.toString()
 }
 
-for (const filename of ["SKILL.md", "LICENSE"]) {
-  if (sourceGit("show", `${sourceCommit}:${filename}`) !== await readFile(join(repository, filename), "utf8")) {
-    throw new Error(`${filename} differs from the pinned public source; review and update the source pin before importing`)
-  }
-}
 const manifest = {
   name: `${workspace}/linkbunny`,
   version: "0.1.1",
@@ -35,7 +30,7 @@ await mkdir(outputDirectory, { recursive: true })
 const pluginDirectory = await mkdtemp(join(outputDirectory, "linkbunny-tessl-"))
 await mkdir(join(pluginDirectory, ".tessl-plugin"))
 await writeFile(join(pluginDirectory, ".tessl-plugin/plugin.json"), `${JSON.stringify(manifest, null, 2)}\n`)
-await copyFile(join(repository, "SKILL.md"), join(pluginDirectory, "SKILL.md"))
-await copyFile(join(repository, "LICENSE"), join(pluginDirectory, "LICENSE"))
+await writeFile(join(pluginDirectory, "SKILL.md"), sourceGit("show", `${sourceCommit}:SKILL.md`))
+await writeFile(join(pluginDirectory, "LICENSE"), sourceGit("show", `${sourceCommit}:LICENSE`))
 await copyFile(join(repository, "tessl/README.md"), join(pluginDirectory, "README.md"))
 console.log(JSON.stringify({ pluginDirectory, name: manifest.name, version: manifest.version, sourceCommit, files: [".tessl-plugin/plugin.json", "SKILL.md", "LICENSE", "README.md"] }, null, 2))

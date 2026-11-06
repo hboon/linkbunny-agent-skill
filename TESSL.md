@@ -11,7 +11,7 @@ bun run test:tessl
 
 The generator creates `linkbunny-tessl-*/` for plugin `<tessl-workspace>/linkbunny`, version `0.1.1`, with public visibility (`"private": false`). Version 0.1.0 was published privately; 0.1.1 carries the same Skill for public release. This is the layout `tessl skill import` produces for a single Skill: the plugin root contains `SKILL.md`, with `"skills": ["."]`. The generator adds the license, homepage, repository, and author fields and a plugin description.
 
-The Skill and license must match the reviewed public source at commit `4d50cfeaa1ab4b40e1ccf304fd1dca6fb3c1b0f6`, the same pin as the [Kilo import](KILO.md). The generator refuses a local copy that differs. Updating the workflow requires reviewing a new public revision and updating the pin.
+The generator copies the Skill and license from the reviewed public source at commit `4d50cfeaa1ab4b40e1ccf304fd1dca6fb3c1b0f6`, the same pin as the [Kilo import](KILO.md), so later root changes do not alter the plugin. Updating the workflow requires reviewing a new public revision and updating the pin.
 
 ## Local validation
 
