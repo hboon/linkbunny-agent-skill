@@ -1,6 +1,6 @@
 ---
 name: linkbunny
-description: Builds backlinks by linking backlinks to other sites. Use when user says "build backlinks" or "linkbunny"
+description: Build links through contextual nofollow exchanges with your coding agent. Review assignments and approve placements on sites you control.
 ---
 
 # LinkBunny agent skill
